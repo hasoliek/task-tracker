@@ -524,17 +524,33 @@
       Low: 2,
     };
 
-    const VALID_STATUSES = new Set([
+    const BOARD_STATUSES = [
       "ToDo",
       "InProgress",
       "Done",
-    ]);
+    ];
+
+    const VALID_STATUSES = new Set(
+      BOARD_STATUSES
+    );
 
     const VALID_PRIORITIES = new Set([
       "Low",
       "Medium",
       "High",
     ]);
+
+    const COLUMN_ID_BY_STATUS = {
+      ToDo: "todo-column",
+      InProgress: "inprogress-column",
+      Done: "done-column",
+    };
+
+    const COUNT_ID_BY_STATUS = {
+      ToDo: "todo-count",
+      InProgress: "inprogress-count",
+      Done: "done-count",
+    };
 
     let tasks = [];
     let draggedTaskId = null;
@@ -552,7 +568,10 @@
         .replaceAll("'", "&#39;");
     }
 
-    function formatServerDetail(detail, fallback) {
+    function formatServerDetail(
+      detail,
+      fallback
+    ) {
       if (
         typeof detail === "string" &&
         detail.trim()
@@ -584,9 +603,14 @@
       return fallback;
     }
 
-    function setBoardState(state, message = "") {
+    function setBoardState(
+      state,
+      message = ""
+    ) {
       const boardState =
-        document.getElementById("board-state");
+        document.getElementById(
+          "board-state"
+        );
 
       if (!boardState) {
         return;
@@ -634,7 +658,9 @@
         `;
 
         const retryButton =
-          document.getElementById("retry-btn");
+          document.getElementById(
+            "retry-btn"
+          );
 
         if (retryButton) {
           retryButton.addEventListener(
@@ -653,18 +679,28 @@
         const secondPriority =
           PRIORITY_RANK[b.priority] ?? 999;
 
-        if (firstPriority !== secondPriority) {
-          return firstPriority - secondPriority;
+        if (
+          firstPriority !==
+          secondPriority
+        ) {
+          return (
+            firstPriority -
+            secondPriority
+          );
         }
 
-        return String(a.id ?? "").localeCompare(
+        return String(
+          a.id ?? ""
+        ).localeCompare(
           String(b.id ?? "")
         );
       });
     }
 
     function taskCardHtml(task) {
-      const id = escapeHtml(task.id || "");
+      const id = escapeHtml(
+        task.id || ""
+      );
 
       const title = escapeHtml(
         task.title || "Untitled"
@@ -689,7 +725,9 @@
           data-task-id="${id}"
           draggable="true"
         >
-          <h3 class="card-title">${title}</h3>
+          <h3 class="card-title">
+            ${title}
+          </h3>
 
           <p class="card-description">
             ${description}
@@ -697,12 +735,16 @@
 
           <div class="card-meta">
             <div>
-              <span class="label">Priority:</span>
+              <span class="label">
+                Priority:
+              </span>
               ${priority}
             </div>
 
             <div>
-              <span class="label">Assignee:</span>
+              <span class="label">
+                Assignee:
+              </span>
               ${assignee}
             </div>
           </div>
@@ -720,19 +762,48 @@
       `;
     }
 
+    function createEmptyStatusBuckets() {
+      return {
+        ToDo: [],
+        InProgress: [],
+        Done: [],
+      };
+    }
+
+    function groupTasksByStatus(
+      allTasks
+    ) {
+      const buckets =
+        createEmptyStatusBuckets();
+
+      for (const task of allTasks) {
+        if (buckets[task.status]) {
+          buckets[task.status].push(
+            task
+          );
+        }
+      }
+
+      return buckets;
+    }
+
     function renderColumn(
       containerId,
-      columnTasks
+      tasksForColumn
     ) {
       const container =
-        document.getElementById(containerId);
+        document.getElementById(
+          containerId
+        );
 
       if (!container) {
         return;
       }
 
       const sortedTasks =
-        sortTasksForColumn(columnTasks);
+        sortTasksForColumn(
+          tasksForColumn
+        );
 
       if (sortedTasks.length === 0) {
         container.innerHTML = `
@@ -744,65 +815,64 @@
       }
 
       container.innerHTML =
-        sortedTasks.map(taskCardHtml).join("");
+        sortedTasks
+          .map(taskCardHtml)
+          .join("");
     }
 
-    function updateColumnCounts(groupedTasks) {
-      const todoCount =
-        document.getElementById("todo-count");
-
-      const inProgressCount =
+    function setCountByElementId(
+      countElementId,
+      value
+    ) {
+      const element =
         document.getElementById(
-          "inprogress-count"
+          countElementId
         );
 
-      const doneCount =
-        document.getElementById("done-count");
-
-      if (todoCount) {
-        todoCount.textContent =
-          String(groupedTasks.ToDo.length);
+      if (element) {
+        element.textContent =
+          String(value);
       }
+    }
 
-      if (inProgressCount) {
-        inProgressCount.textContent =
-          String(groupedTasks.InProgress.length);
+    function updateColumnCounts(
+      groupedTasks
+    ) {
+      for (
+        const status of BOARD_STATUSES
+      ) {
+        setCountByElementId(
+          COUNT_ID_BY_STATUS[status],
+          groupedTasks[status].length
+        );
       }
+    }
 
-      if (doneCount) {
-        doneCount.textContent =
-          String(groupedTasks.Done.length);
+    function renderAllColumns(
+      groupedTasks
+    ) {
+      for (
+        const status of BOARD_STATUSES
+      ) {
+        renderColumn(
+          COLUMN_ID_BY_STATUS[status],
+          groupedTasks[status]
+        );
       }
     }
 
     function renderBoard(allTasks) {
-      const groupedTasks = {
-        ToDo: [],
-        InProgress: [],
-        Done: [],
-      };
+      const groupedTasks =
+        groupTasksByStatus(
+          allTasks
+        );
 
-      for (const task of allTasks) {
-        if (groupedTasks[task.status]) {
-          groupedTasks[task.status].push(task);
-        }
-      }
-
-      updateColumnCounts(groupedTasks);
-
-      renderColumn(
-        "todo-column",
-        groupedTasks.ToDo
+      updateColumnCounts(
+        groupedTasks
       );
 
-      renderColumn(
-        "inprogress-column",
-        groupedTasks.InProgress
-      );
-
-      renderColumn(
-        "done-column",
-        groupedTasks.Done
+      renderAllColumns(
+        groupedTasks
       );
 
       attachCardDragHandlers();
@@ -810,64 +880,87 @@
 
     function clearTransientDragClasses() {
       document
-        .querySelectorAll(".card.dragging")
+        .querySelectorAll(
+          ".card.dragging"
+        )
         .forEach((card) => {
-          card.classList.remove("dragging");
+          card.classList.remove(
+            "dragging"
+          );
         });
 
       document
-        .querySelectorAll(".column.drag-over")
+        .querySelectorAll(
+          ".column.drag-over"
+        )
         .forEach((column) => {
-          column.classList.remove("drag-over");
+          column.classList.remove(
+            "drag-over"
+          );
         });
     }
 
     function clearDragTracking() {
       draggedTaskId = null;
       dragSourceStatus = null;
+
       clearTransientDragClasses();
     }
 
     function attachCardDragHandlers() {
       const cards =
-        document.querySelectorAll(".card");
+        document.querySelectorAll(
+          ".card"
+        );
 
       for (const card of cards) {
         card.addEventListener(
           "dragstart",
           (event) => {
             const taskId =
-              card.getAttribute("data-task-id");
+              card.getAttribute(
+                "data-task-id"
+              );
 
             if (!taskId) {
               event.preventDefault();
               return;
             }
 
-            const draggedTask = tasks.find(
-              (task) =>
-                String(task.id) === taskId
-            );
+            const draggedTask =
+              tasks.find(
+                (task) =>
+                  String(task.id) ===
+                  taskId
+              );
 
             if (!draggedTask) {
               event.preventDefault();
               return;
             }
 
-            draggedTaskId = taskId;
+            draggedTaskId =
+              taskId;
+
             dragSourceStatus =
               draggedTask.status;
 
-            card.classList.add("dragging");
+            card.classList.add(
+              "dragging"
+            );
 
-            if (event.dataTransfer) {
-              event.dataTransfer.effectAllowed =
-                "move";
+            if (
+              event.dataTransfer
+            ) {
+              event.dataTransfer
+                .effectAllowed =
+                  "move";
 
-              event.dataTransfer.setData(
-                "text/plain",
-                taskId
-              );
+              event.dataTransfer
+                .setData(
+                  "text/plain",
+                  taskId
+                );
             }
           }
         );
@@ -881,9 +974,13 @@
 
     function attachColumnDropHandlers() {
       const columns =
-        document.querySelectorAll(".column");
+        document.querySelectorAll(
+          ".column"
+        );
 
-      for (const column of columns) {
+      for (
+        const column of columns
+      ) {
         column.addEventListener(
           "dragover",
           (event) => {
@@ -893,12 +990,17 @@
 
             event.preventDefault();
 
-            if (event.dataTransfer) {
-              event.dataTransfer.dropEffect =
-                "move";
+            if (
+              event.dataTransfer
+            ) {
+              event.dataTransfer
+                .dropEffect =
+                  "move";
             }
 
-            column.classList.add("drag-over");
+            column.classList.add(
+              "drag-over"
+            );
           }
         );
 
@@ -917,7 +1019,9 @@
             event.preventDefault();
 
             const targetStatus =
-              column.getAttribute("data-status");
+              column.getAttribute(
+                "data-status"
+              );
 
             column.classList.remove(
               "drag-over"
@@ -926,19 +1030,23 @@
             if (
               !draggedTaskId ||
               !targetStatus ||
-              !VALID_STATUSES.has(targetStatus)
+              !VALID_STATUSES.has(
+                targetStatus
+              )
             ) {
               clearDragTracking();
               return;
             }
 
-            const taskId = draggedTaskId;
+            const taskId =
+              draggedTaskId;
 
-            const taskIndex = tasks.findIndex(
-              (task) =>
-                String(task.id) ===
-                String(taskId)
-            );
+            const taskIndex =
+              tasks.findIndex(
+                (task) =>
+                  String(task.id) ===
+                  String(taskId)
+              );
 
             if (taskIndex === -1) {
               clearDragTracking();
@@ -952,7 +1060,10 @@
               dragSourceStatus ||
               currentTask.status;
 
-            if (sourceStatus === targetStatus) {
+            if (
+              sourceStatus ===
+              targetStatus
+            ) {
               clearDragTracking();
               return;
             }
@@ -970,22 +1081,27 @@
             setBoardState("ready");
 
             try {
-              const response = await fetch(
-                `${API_BASE_URL}/tasks/${encodeURIComponent(
-                  String(taskId)
-                )}`,
-                {
-                  method: "PATCH",
-                  headers: {
-                    "Content-Type":
-                      "application/json",
-                    Accept: "application/json",
-                  },
-                  body: JSON.stringify({
-                    status: targetStatus,
-                  }),
-                }
-              );
+              const response =
+                await fetch(
+                  `${API_BASE_URL}/tasks/${encodeURIComponent(
+                    String(taskId)
+                  )}`,
+                  {
+                    method: "PATCH",
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+                      Accept:
+                        "application/json",
+                    },
+                    body: JSON.stringify(
+                      {
+                        status:
+                          targetStatus,
+                      }
+                    ),
+                  }
+                );
 
               if (!response.ok) {
                 let detailMessage =
@@ -1005,18 +1121,25 @@
                     `Failed to move task: HTTP ${response.status}`;
                 }
 
-                throw new Error(detailMessage);
+                throw new Error(
+                  detailMessage
+                );
               }
 
               const updatedTask =
                 await response.json();
 
-              tasks[taskIndex] = updatedTask;
+              tasks[taskIndex] =
+                updatedTask;
 
               renderBoard(tasks);
-              setBoardState("ready");
+              setBoardState(
+                "ready"
+              );
             } catch (error) {
-              tasks[taskIndex] = originalTask;
+              tasks[taskIndex] =
+                originalTask;
+
               renderBoard(tasks);
 
               const message =
@@ -1042,11 +1165,6 @@
         overlay:
           document.getElementById(
             "task-modal-overlay"
-          ),
-
-        panel:
-          document.getElementById(
-            "task-modal-panel"
           ),
 
         modalTitle:
@@ -1121,7 +1239,8 @@
         getModalElements();
 
       if (formError) {
-        formError.textContent = "";
+        formError.textContent =
+          "";
       }
     }
 
@@ -1130,7 +1249,8 @@
         getModalElements();
 
       if (formError) {
-        formError.textContent = message;
+        formError.textContent =
+          message;
       }
     }
 
@@ -1154,16 +1274,21 @@
       }
 
       if (taskStatus) {
-        taskStatus.value = "ToDo";
+        taskStatus.value =
+          "ToDo";
       }
 
       if (taskPriority) {
-        taskPriority.value = "Medium";
+        taskPriority.value =
+          "Medium";
       }
 
       if (saveButton) {
-        saveButton.disabled = false;
-        saveButton.textContent = "Save";
+        saveButton.disabled =
+          false;
+
+        saveButton.textContent =
+          "Save";
       }
 
       clearModalError();
@@ -1179,7 +1304,10 @@
         return;
       }
 
-      overlay.classList.remove("hidden");
+      overlay.classList.remove(
+        "hidden"
+      );
+
       overlay.setAttribute(
         "aria-hidden",
         "false"
@@ -1202,7 +1330,10 @@
         return;
       }
 
-      overlay.classList.add("hidden");
+      overlay.classList.add(
+        "hidden"
+      );
+
       overlay.setAttribute(
         "aria-hidden",
         "true"
@@ -1230,7 +1361,8 @@
       }
 
       if (saveButton) {
-        saveButton.textContent = "Save";
+        saveButton.textContent =
+          "Save";
       }
 
       openModal();
@@ -1267,11 +1399,13 @@
       }
 
       if (saveButton) {
-        saveButton.textContent = "Save";
+        saveButton.textContent =
+          "Save";
       }
 
       if (idInput) {
-        idInput.value = task.id;
+        idInput.value =
+          task.id;
       }
 
       if (taskTitle) {
@@ -1286,14 +1420,19 @@
 
       if (
         taskStatus &&
-        VALID_STATUSES.has(task.status)
+        VALID_STATUSES.has(
+          task.status
+        )
       ) {
-        taskStatus.value = task.status;
+        taskStatus.value =
+          task.status;
       }
 
       if (
         taskPriority &&
-        VALID_PRIORITIES.has(task.priority)
+        VALID_PRIORITIES.has(
+          task.priority
+        )
       ) {
         taskPriority.value =
           task.priority;
@@ -1313,7 +1452,9 @@
 
       return Boolean(
         overlay &&
-        !overlay.classList.contains("hidden")
+        !overlay.classList.contains(
+          "hidden"
+        )
       );
     }
 
@@ -1346,17 +1487,21 @@
       }
 
       const description = (
-        taskDescription?.value ?? ""
+        taskDescription?.value ??
+        ""
       ).trim();
 
       const selectedStatus =
-        taskStatus?.value ?? "ToDo";
+        taskStatus?.value ??
+        "ToDo";
 
       const priority =
-        taskPriority?.value ?? "Medium";
+        taskPriority?.value ??
+        "Medium";
 
       const assigneeValue = (
-        taskAssignee?.value ?? ""
+        taskAssignee?.value ??
+        ""
       ).trim();
 
       const assignee =
@@ -1366,12 +1511,15 @@
 
       const isEditMode =
         modalMode === "edit" &&
-        Boolean(taskId?.value);
+        Boolean(
+          taskId?.value
+        );
 
       let url =
         `${API_BASE_URL}/tasks`;
 
-      let method = "POST";
+      let method =
+        "POST";
 
       const payload = {
         title,
@@ -1381,11 +1529,12 @@
       };
 
       if (isEditMode) {
-        const existingTask = tasks.find(
-          (task) =>
-            String(task.id) ===
-            String(taskId.value)
-        );
+        const existingTask =
+          tasks.find(
+            (task) =>
+              String(task.id) ===
+              String(taskId.value)
+          );
 
         if (!existingTask) {
           setModalError(
@@ -1399,7 +1548,8 @@
             taskId.value
           )}`;
 
-        method = "PATCH";
+        method =
+          "PATCH";
 
         if (
           selectedStatus !==
@@ -1414,32 +1564,40 @@
       }
 
       if (saveButton) {
-        saveButton.disabled = true;
+        saveButton.disabled =
+          true;
+
         saveButton.textContent =
           "Saving...";
       }
 
       try {
-        const response = await fetch(
-          url,
-          {
-            method,
-            headers: {
-              "Content-Type":
-                "application/json",
-              Accept:
-                "application/json",
-            },
-            body:
-              JSON.stringify(payload),
-          }
-        );
+        const response =
+          await fetch(
+            url,
+            {
+              method,
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Accept:
+                  "application/json",
+              },
+              body:
+                JSON.stringify(
+                  payload
+                ),
+            }
+          );
 
         if (
-          response.status === 200 ||
-          response.status === 201
+          response.status ===
+            200 ||
+          response.status ===
+            201
         ) {
           closeModalAndReset();
+
           await fetchTasks();
           return;
         }
@@ -1459,20 +1617,26 @@
               errorMessage
             );
         } catch {
-          // Keep the fallback message.
+          // Keep fallback.
         }
 
-        setModalError(errorMessage);
+        setModalError(
+          errorMessage
+        );
       } catch {
         const networkMessage =
           method === "POST"
             ? "Network error while creating task. Please try again."
             : "Network error while updating task. Please try again.";
 
-        setModalError(networkMessage);
+        setModalError(
+          networkMessage
+        );
       } finally {
         if (saveButton) {
-          saveButton.disabled = false;
+          saveButton.disabled =
+            false;
+
           saveButton.textContent =
             "Save";
         }
@@ -1513,7 +1677,10 @@
         overlay.addEventListener(
           "click",
           (event) => {
-            if (event.target === overlay) {
+            if (
+              event.target ===
+              overlay
+            ) {
               closeModalAndReset();
             }
           }
@@ -1531,7 +1698,8 @@
         "keydown",
         (event) => {
           if (
-            event.key === "Escape" &&
+            event.key ===
+              "Escape" &&
             isModalOpen()
           ) {
             closeModalAndReset();
@@ -1542,7 +1710,9 @@
 
     function attachEditButtonHandler() {
       const board =
-        document.querySelector(".board");
+        document.querySelector(
+          ".board"
+        );
 
       if (!board) {
         return;
@@ -1551,10 +1721,14 @@
       board.addEventListener(
         "click",
         (event) => {
-          const target = event.target;
+          const target =
+            event.target;
 
           if (
-            !(target instanceof HTMLElement)
+            !(
+              target instanceof
+              HTMLElement
+            )
           ) {
             return;
           }
@@ -1577,25 +1751,30 @@
             return;
           }
 
-          openEditModal(taskId);
+          openEditModal(
+            taskId
+          );
         }
       );
     }
 
     async function fetchTasks() {
-      setBoardState("loading");
+      setBoardState(
+        "loading"
+      );
 
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/tasks`,
-          {
-            method: "GET",
-            headers: {
-              Accept:
-                "application/json",
-            },
-          }
-        );
+        const response =
+          await fetch(
+            `${API_BASE_URL}/tasks`,
+            {
+              method: "GET",
+              headers: {
+                Accept:
+                  "application/json",
+              },
+            }
+          );
 
         if (!response.ok) {
           throw new Error(
@@ -1606,16 +1785,23 @@
         const data =
           await response.json();
 
-        tasks = Array.isArray(data)
-          ? data
-          : [];
+        tasks =
+          Array.isArray(data)
+            ? data
+            : [];
 
         renderBoard(tasks);
 
-        if (tasks.length === 0) {
-          setBoardState("empty");
+        if (
+          tasks.length === 0
+        ) {
+          setBoardState(
+            "empty"
+          );
         } else {
-          setBoardState("ready");
+          setBoardState(
+            "ready"
+          );
         }
       } catch (error) {
         tasks = [];
