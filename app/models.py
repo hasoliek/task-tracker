@@ -1,8 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
-from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TaskStatus(str, Enum):
@@ -17,50 +16,82 @@ class TaskPriority(str, Enum):
     HIGH = "High"
 
 
+def clean_tags(tags: list[str]) -> list[str]:
+    cleaned_tags: list[str] = []
+
+    for tag in tags:
+        cleaned_tag = tag.strip()
+
+        if not cleaned_tag:
+            continue
+
+        if cleaned_tag not in cleaned_tags:
+            cleaned_tags.append(cleaned_tag)
+
+    return cleaned_tags
+
+
 class TaskCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     title: str
-    description: Optional[str] = ""
+    description: str = ""
     status: TaskStatus = TaskStatus.TODO
     priority: TaskPriority = TaskPriority.MEDIUM
-    assignee: Optional[str] = None
+    assignee: str | None = None
+    due_date: date | None = None
+    tags: list[str] = Field(default_factory=list)
 
-    @field_validator("title", mode="before")
+    @field_validator("title")
     @classmethod
     def validate_title(cls, value: str) -> str:
-        if not isinstance(value, str):
-            raise ValueError("title must be a string")
-        cleaned = value.strip()
-        if not cleaned:
-            raise ValueError("title cannot be blank")
-        if len(cleaned) > 200:
-            raise ValueError("title must be at most 200 characters")
-        return cleaned
+        cleaned_value = value.strip()
+
+        if not cleaned_value:
+            raise ValueError("Title must not be blank")
+
+        return cleaned_value
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(cls, value: list[str]) -> list[str]:
+        return clean_tags(value)
 
 
 class TaskUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    title: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[TaskStatus] = None
-    priority: Optional[TaskPriority] = None
-    assignee: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
+    status: TaskStatus | None = None
+    priority: TaskPriority | None = None
+    assignee: str | None = None
+    due_date: date | None = None
+    tags: list[str] | None = None
 
-    @field_validator("title", mode="before")
+    @field_validator("title")
     @classmethod
-    def validate_title(cls, value: Optional[str]) -> Optional[str]:
+    def validate_title(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        if not isinstance(value, str):
-            raise ValueError("title must be a string")
-        cleaned = value.strip()
-        if not cleaned:
-            raise ValueError("title cannot be blank")
-        if len(cleaned) > 200:
-            raise ValueError("title must be at most 200 characters")
-        return cleaned
+
+        cleaned_value = value.strip()
+
+        if not cleaned_value:
+            raise ValueError("Title must not be blank")
+
+        return cleaned_value
+
+    @field_validator("tags")
+    @classmethod
+    def validate_tags(
+        cls,
+        value: list[str] | None,
+    ) -> list[str] | None:
+        if value is None:
+            return None
+
+        return clean_tags(value)
 
 
 class TaskResponse(BaseModel):
@@ -71,6 +102,8 @@ class TaskResponse(BaseModel):
     description: str
     status: TaskStatus
     priority: TaskPriority
-    assignee: Optional[str]
+    assignee: str | None = None
+    due_date: date | None = None
+    tags: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
-from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi import FastAPI, HTTPException, Response, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from app import storage
 from app.business_rules import validate_status_transition
@@ -18,6 +19,7 @@ app = FastAPI(
     description="Task Tracker backend for Module 2",
     version="0.2.0",
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -28,6 +30,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
@@ -55,10 +58,14 @@ def create_task(payload: TaskCreate) -> TaskResponse:
 def list_tasks(
     status: TaskStatus | None = None,
     priority: TaskPriority | None = None,
+    overdue: bool | None = None,
+    tag: str | None = None,
 ) -> list[TaskResponse]:
     return storage.get_all_tasks(
         status=status,
         priority=priority,
+        overdue=overdue,
+        tag=tag,
     )
 
 
@@ -79,8 +86,15 @@ def get_task(task_id: str) -> TaskResponse:
     return task
 
 
-@app.patch("/tasks/{task_id}", response_model=TaskResponse, tags=["tasks"])
-def update_task(task_id: str, payload: TaskUpdate) -> TaskResponse:
+@app.patch(
+    "/tasks/{task_id}",
+    response_model=TaskResponse,
+    tags=["tasks"],
+)
+def update_task(
+    task_id: str,
+    payload: TaskUpdate,
+) -> TaskResponse:
     current_task = storage.get_task_by_id(task_id)
 
     if current_task is None:
@@ -90,9 +104,15 @@ def update_task(task_id: str, payload: TaskUpdate) -> TaskResponse:
         )
 
     if payload.status is not None:
-        validate_status_transition(current_task.status, payload.status)
+        validate_status_transition(
+            current_task.status,
+            payload.status,
+        )
 
-    updated_task = storage.update_task(task_id, payload)
+    updated_task = storage.update_task(
+        task_id,
+        payload,
+    )
 
     if updated_task is None:
         raise HTTPException(
@@ -117,4 +137,6 @@ def delete_task(task_id: str) -> Response:
             detail=f"Task with id {task_id} not found",
         )
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(
+        status_code=status.HTTP_204_NO_CONTENT
+    )
