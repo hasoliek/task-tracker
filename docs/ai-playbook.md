@@ -1,63 +1,76 @@
 # AI Playbook
 
-## Purpose
+## When I Reach for AI First
 
-This document summarizes the practical workflow followed while completing the final project using AI assistance.
+I use AI early when I need help understanding a problem, exploring implementation options, or generating a starting point for documentation or code. During this project, AI was most helpful for:
 
----
+- Explaining Docker configuration and container best practices.
+- Reviewing documentation for completeness and consistency.
+- Suggesting improvements to the FastAPI project structure.
+- Troubleshooting frontend communication issues.
+- Reviewing release readiness before submission.
 
-## Workflow
-
-1. Understand the assignment requirements before making changes.
-2. Verify the existing application by running the backend, frontend, and automated tests.
-3. Ask AI for small, focused changes instead of large rewrites.
-4. Review every AI suggestion before applying it.
-5. Test every accepted change locally.
-6. Record important AI-assisted decisions in the project documentation.
-7. Perform a final verification before committing.
+I prefer asking focused questions about one problem at a time rather than requesting large code rewrites.
 
 ---
 
-## Effective Prompting Practices
+## When I Do Not Reach for AI First
 
-The following approaches produced the most reliable AI assistance:
+I avoid using AI when the answer should come directly from my own verification or from the project itself. Instead, I first:
 
-- Provide the current project context before asking for code.
-- Request incremental changes instead of complete rewrites.
-- Ask AI to explain the reasoning behind recommendations.
-- Verify outputs using automated tests.
-- Use manual testing to confirm frontend behavior.
+- Run the application locally.
+- Execute the full pytest suite.
+- Inspect repository files such as `.gitignore`, `.dockerignore`, and the Dockerfile.
+- Verify API responses manually.
+- Review Git changes before committing.
 
----
-
-## Verification Process
-
-Every accepted AI recommendation was verified using one or more of the following:
-
-- Pytest test suite
-- Backend `/health` endpoint
-- Manual browser testing
-- Docker build and runtime verification
-- Git diff review before committing
+I rely on direct testing rather than assuming AI-generated answers are correct.
 
 ---
 
-## Lessons Learned
+## My Non-Negotiables
 
-- AI is most effective when given clear project context.
-- Small iterative prompts reduce mistakes.
-- Automated tests are essential for validating AI-generated code.
-- Human review remains necessary before accepting any change.
-- Documentation should be updated alongside implementation changes.
+Regardless of AI recommendations, I always:
+
+- Review every suggested change before applying it.
+- Run automated tests after code changes.
+- Perform manual verification of important functionality.
+- Never commit secrets or sensitive information.
+- Ensure documentation reflects the actual implementation rather than assumptions.
 
 ---
 
-## Future Improvements
+## My Review Rules
 
-If this project continues, AI can assist with:
+Before accepting any AI-generated suggestion, I ask myself:
 
-- Increasing test coverage
-- API documentation improvements
-- Performance optimization
-- Additional frontend enhancements
-- Refactoring while preserving existing behavior
+1. Does it solve the actual problem?
+2. Can I explain how it works?
+3. Have I verified it by testing or inspection?
+4. Does it follow the project requirements?
+5. Does it introduce unnecessary complexity?
+
+Only after answering these questions do I include the change in the project.
+
+---
+
+## What I Am Still Figuring Out
+
+During this project I became more confident using AI as a development assistant, but I still want to improve at:
+
+- Writing better prompts for complex technical problems.
+- Identifying unnecessary AI suggestions more quickly.
+- Improving Docker and CI/CD knowledge.
+- Designing larger projects with less dependence on AI guidance.
+
+---
+
+## Decision Card
+
+| Situation | My Decision |
+|-----------|-------------|
+| Understanding a new concept | Ask AI for an explanation first. |
+| Writing new code | Use AI for ideas, then review and modify the solution myself. |
+| Debugging failures | Verify logs, tests, and application behaviour before accepting AI conclusions. |
+| Security-related changes | Perform my own manual verification before accepting AI recommendations. |
+| Final submission | Personally verify the application, tests, Docker configuration, CI results, and documentation before submitting. |

@@ -56,24 +56,30 @@ The warnings are dependency deprecation warnings only and do not affect applicat
 
 ## CI Evidence
 
-- Workflow file: `.github/workflows/ci.yml`
-- Triggered on `push` and `pull_request`
-- Python version: `3.11`
-- Dependencies installed from `requirements.txt`
-- Test command:
+Workflow file:
+
+```
+.github/workflows/ci.yml
+```
+
+After pushing the `final-project` branch, I verified the workflow from the GitHub Actions page.
+
+Observed result:
+
+- Workflow: **CI**
+- Job: **test**
+- Trigger: **Push**
+- Status: **Passed** ✅
+- Python version: **3.11**
+- Test command executed:
 
 ```bash
 pytest -v
 ```
 
-Shortcut verification:
+Evidence:
 
-- No `continue-on-error`
-- No `|| true`
-- Tests are not skipped
-- Explicit Python version configured
-
-GitHub Actions run will be recorded after the final push.
+The latest GitHub Actions workflow completed successfully, confirming that the repository builds correctly and all automated tests pass.
 
 ---
 
@@ -120,12 +126,16 @@ Docker safety verification:
 
 ---
 
+
+
+
+
 ## Documentation Claim vs Reality
 
-| Claim | Evidence | Result |
-|-------|----------|--------|
-| Backend runs using `uvicorn app.main:app --reload --port 8000`. | Manual verification and `/health`. | Confirmed |
-| Frontend communicates with backend. | Manual browser verification. | Confirmed |
-| CI runs pytest. | `.github/workflows/ci.yml` | Confirmed |
-| Local test suite passes. | `pytest` execution. | Confirmed |
-| Docker image runs successfully. | Local Docker build and `/health` verification. | Confirmed |
+| Claim | Evidence Collected | Result |
+|-------|--------------------|--------|
+| Backend runs using `uvicorn app.main:app --reload --port 8000`. | Started the backend with `uvicorn app.main:app --reload --port 8000`, then ran `curl http://127.0.0.1:8000/health` and received `HTTP/1.1 200 OK` with `{"status":"ok"}`. | Verified |
+| Frontend communicates with the backend. | Served the frontend using `python -m http.server 5500`, opened `http://127.0.0.1:5500`, created a task, and confirmed it appeared on the Kanban board and could be edited successfully. | Verified |
+| Local test suite passes. | Executed `pytest` and obtained `37 passed, 3 warnings in 0.07s`. The warnings were dependency deprecation warnings only and did not affect application functionality. | Verified |
+| CI executes automated tests. | Checked the latest GitHub Actions **CI** workflow after pushing the `final-project` branch. The **test** job completed successfully using Python 3.11 and `pytest -v`. | Verified |
+| Docker image runs successfully. | Built the image using `docker build -t task-tracker-final .`, started it using `docker run --rm -d --name task-tracker-final -p 8001:8000 task-tracker-final`, then verified `curl http://127.0.0.1:8001/health` returned `HTTP/1.1 200 OK`. | Verified |
