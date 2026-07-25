@@ -94,7 +94,7 @@ def test_list_tasks_empty_returns_200_and_empty_list(client: TestClient):
 
     # Assert
     assert response.status_code == 200
-    assert response.json() == ["ci-red-proof"]
+    assert response.json() == []
 
 
 def test_list_tasks_filter_by_status_no_match_returns_200_and_empty_list(
