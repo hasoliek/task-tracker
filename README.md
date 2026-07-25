@@ -208,3 +208,137 @@ AI was used throughout the project to assist with:
 All AI-generated output was manually reviewed, tested, and either accepted, edited, or rejected before being incorporated into the final solution.
 
 Verification included automated regression testing, manual browser testing, deliberate break tests, and API validation to ensure that new features did not introduce regressions.
+
+---
+
+# Final Project
+
+**Branch reviewed:** `final-project`
+
+## What this submission demonstrates
+
+- The existing Task Tracker application remains within the intended course scope with no unrelated product features added.
+- The backend runs successfully and the `/health` endpoint returns **HTTP 200 OK**.
+- The complete test suite passes successfully (`37 passed`).
+- GitHub Actions runs the pytest suite on every push and pull request.
+- A Docker image can be built and run successfully, with `/health` verified from inside the container.
+- AI review, security verification, and ownership evidence are documented in the `docs/` folder.
+
+---
+
+## How to run locally
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+Start the backend:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+The API will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Serve the frontend:
+
+```bash
+cd frontend
+python -m http.server 5500
+```
+
+Open:
+
+```text
+http://127.0.0.1:5500
+```
+
+---
+
+## How to run tests
+
+```bash
+pytest
+```
+
+Current baseline:
+
+```text
+37 passed, 3 warnings
+```
+
+---
+
+## How to run with Docker
+
+Build the image:
+
+```bash
+docker build -t task-tracker-final .
+```
+
+Run the container:
+
+```bash
+docker run --rm -d \
+  --name task-tracker-final \
+  -p 8001:8000 \
+  task-tracker-final
+```
+
+Verify:
+
+```bash
+curl http://127.0.0.1:8001/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+---
+
+## Evidence files
+
+- `docs/release-evidence.md`
+- `docs/final-ai-review.md`
+- `docs/ai-playbook.md`
+
+---
+
+## AI assistance summary
+
+AI was used to assist with:
+
+- implementation planning
+- debugging
+- automated test review
+- CI workflow review
+- Docker configuration
+- documentation drafting
+- release verification
+
+All AI-generated suggestions were manually reviewed before acceptance.
+
+Verification included:
+
+- running the complete pytest suite
+- manual frontend verification
+- backend `/health` verification
+- Docker runtime verification
+- code and documentation review
+
+One AI suggestion was corrected during the project by serving the frontend through an HTTP server instead of opening `index.html` directly, ensuring proper backend communication before documenting the release evidence.
+
