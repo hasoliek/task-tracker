@@ -52,7 +52,7 @@ docs/
 
 # Requirements
 
-- Python 3.13 or later
+- Python 3.11 (project/course target; also used by CI)
 - Virtual environment
 - FastAPI
 - Uvicorn
@@ -86,13 +86,7 @@ pip install -r requirements.txt
 Start the FastAPI server from the project root:
 
 ```bash
-python -m uvicorn app.main:app --reload
-```
-
-or
-
-```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
 The backend will be available at:
@@ -148,16 +142,25 @@ http://127.0.0.1:8000
 From the project root, execute:
 
 ```bash
-pytest
+pytest -v
 ```
 
-Final regression result:
+All tests in `tests/` should pass. Any warnings shown are dependency/deprecation warnings and do not affect application functionality.
 
-```text
-37 passed, 3 warnings
-```
+> **Contributor note:** Make sure the tests pass locally before pushing — CI runs `pytest -v` automatically on every push and pull request (see [Continuous Integration](#continuous-integration)).
 
-The warnings are dependency/deprecation warnings and do not affect application functionality.
+---
+
+# Continuous Integration
+
+Automated testing runs via GitHub Actions.
+
+- **Workflow file:** `.github/workflows/ci.yml`
+- **Triggers:** every `push` and `pull_request`
+- **Python version:** 3.11
+- **Steps:** installs dependencies from `requirements.txt`, then runs `pytest -v`
+
+The build fails if any test fails.
 
 ---
 

@@ -63,6 +63,8 @@ FastAPI backend + a single static-HTML Kanban frontend. The backend is three lay
 
 **Documentation** — project docs (user stories, mini-ADR, prompt log, verification, reflection) live in `docs/midcourse/`. The submission branch is `mid-course-project`.
 
+**Continuous Integration** — `.github/workflows/ci.yml` runs on every `push` and `pull_request`. It installs `requirements.txt` on **Python 3.11** and runs `pytest -v`. There are no deployment steps.
+
 ## Business Rules
 
 **Task status values** (`TaskStatus` in `models.py`): `ToDo`, `InProgress`, `Done`.
