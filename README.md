@@ -2,13 +2,17 @@
 
 ## Overview
 
-This project was completed as the **Mid-Course Project** for the AI-Assisted Coding course.
+This project was completed as the **Mid-Course Project** for the **AI-Assisted Coding** course.
 
-The application is a FastAPI-based Task Tracker with a Kanban-style frontend. It supports task management through a REST API and a browser-based interface.
+The application is a FastAPI-based Task Tracker with a Kanban-style frontend. It provides a REST API together with a browser-based interface for creating, updating, organizing, and managing tasks.
 
-### Implemented Features
+> **Submission branch:** `mid-course-project`
 
-#### Core Features
+---
+
+# Implemented Features
+
+## Core Features
 
 - Create tasks
 - Retrieve tasks
@@ -18,14 +22,15 @@ The application is a FastAPI-based Task Tracker with a Kanban-style frontend. It
 - Status transition validation
 - Priority filtering
 
-#### Feature 1 – Due Dates and Overdue Filtering
+## Feature 1 – Due Dates and Overdue Filtering
 
 - Optional due dates
 - Automatic overdue calculation
 - Overdue task filtering
 - Due date display on task cards
+- Overdue indicator for active overdue tasks
 
-#### Feature 2 – Tags and Tag Filtering
+## Feature 2 – Tags and Tag Filtering
 
 - Multiple tags per task
 - Tag validation
@@ -36,7 +41,7 @@ The application is a FastAPI-based Task Tracker with a Kanban-style frontend. It
 
 # Project Structure
 
-```
+```text
 app/
 frontend/
 tests/
@@ -47,7 +52,7 @@ docs/
 
 # Requirements
 
-- Python 3.13+
+- Python 3.13 or later
 - Virtual environment
 - FastAPI
 - Uvicorn
@@ -68,7 +73,7 @@ Activate it (macOS/Linux):
 source venv/bin/activate
 ```
 
-Install dependencies:
+Install the required packages:
 
 ```bash
 pip install -r requirements.txt
@@ -76,9 +81,15 @@ pip install -r requirements.txt
 
 ---
 
-# Run the Backend
+# Running the Backend
 
-Start the FastAPI server:
+Start the FastAPI server from the project root:
+
+```bash
+python -m uvicorn app.main:app --reload
+```
+
+or
 
 ```bash
 uvicorn app.main:app --reload
@@ -86,64 +97,79 @@ uvicorn app.main:app --reload
 
 The backend will be available at:
 
-```
+```text
 http://127.0.0.1:8000
 ```
 
-Swagger documentation:
+Interactive API documentation:
 
-```
+```text
 http://127.0.0.1:8000/docs
 ```
 
 ---
 
-# Run the Frontend
+# Running the Frontend
 
-From the project directory:
+The frontend is contained in:
+
+```text
+frontend/index.html
+```
+
+### Recommended
+
+Open `frontend/index.html` using **VS Code Live Server** while the FastAPI backend is running.
+
+### Alternative
+
+From the `frontend` directory:
 
 ```bash
-cd frontend
 python -m http.server 5500
 ```
 
-Open:
+Then open:
 
-```
+```text
 http://127.0.0.1:5500
 ```
 
-The frontend communicates with the FastAPI backend running on port 8000.
+The frontend communicates with the FastAPI backend running on:
+
+```text
+http://127.0.0.1:8000
+```
 
 ---
 
-# Running Tests
+# Running the Tests
 
-Run the complete regression suite:
+From the project root, execute:
 
 ```bash
 pytest
 ```
 
-Expected result:
+Final regression result:
 
-```
-31 passed
+```text
+37 passed, 3 warnings
 ```
 
-(Deprecation warnings may appear depending on installed package versions.)
+The warnings are dependency/deprecation warnings and do not affect application functionality.
 
 ---
 
 # Documentation
 
-Project documentation is available under:
+Project documentation is located in:
 
-```
+```text
 docs/midcourse/
 ```
 
-Including:
+The folder includes:
 
 - User Stories
 - Mini ADR
@@ -167,7 +193,7 @@ Including:
 
 # AI-Assisted Development
 
-AI was used to assist with:
+AI was used throughout the project to assist with:
 
 - implementation planning,
 - code generation,
@@ -176,4 +202,6 @@ AI was used to assist with:
 - frontend integration,
 - documentation.
 
-All AI-generated outputs were manually reviewed, tested, and corrected before acceptance.
+All AI-generated output was manually reviewed, tested, and either accepted, edited, or rejected before being incorporated into the final solution.
+
+Verification included automated regression testing, manual browser testing, deliberate break tests, and API validation to ensure that new features did not introduce regressions.

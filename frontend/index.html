@@ -352,6 +352,20 @@
       white-space: nowrap;
     }
 
+    .overdue-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
     @media (max-width: 900px) {
       .board {
         grid-template-columns: 1fr;
@@ -803,6 +817,7 @@
       const description = escapeHtml(task.description || "No description provided.");
       const priority = escapeHtml(task.priority || "Medium");
       const assignee = escapeHtml(task.assignee || "Unassigned");
+      const dueDate = task.due_date ? escapeHtml(task.due_date) : "";
 
       const tagsHtml =
         Array.isArray(task.tags) && task.tags.length > 0
@@ -810,6 +825,19 @@
               .map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`)
               .join("")
           : "No tags";
+
+      const dueDateHtml = dueDate
+        ? `
+          <div>
+            <span class="label">Due:</span>
+            ${dueDate}
+          </div>
+        `
+        : "";
+
+      const overdueHtml = task.overdue === true
+        ? `<div class="overdue-badge">Overdue</div>`
+        : "";
 
       return `
         <section
@@ -833,6 +861,9 @@
               <span class="label">Assignee:</span>
               ${assignee}
             </div>
+
+            ${dueDateHtml}
+            ${overdueHtml}
           </div>
 
           <div class="card-tags">
@@ -1273,6 +1304,7 @@
       taskAssignee: document.getElementById(
         "task-assignee"
       ),
+      taskDueDate: document.getElementById("task-due-date"),
       taskTags: document.getElementById("task-tags"),
       formError: document.getElementById(
         "task-form-error"
@@ -1442,6 +1474,7 @@
         taskStatus,
         taskPriority,
         taskAssignee,
+        taskDueDate,
         taskTags,
       } = getModalElements();
 
@@ -1488,6 +1521,10 @@
         taskAssignee.value = task.assignee ?? "";
       }
 
+      if (taskDueDate) {
+        taskDueDate.value = task.due_date ?? "";
+      }
+
       if (taskTags) {
         taskTags.value = Array.isArray(task.tags)
           ? task.tags.join(", ")
@@ -1522,6 +1559,7 @@
         taskPriority,
         taskAssignee,
         taskDueDate,
+        taskTags,
         saveButton,
       } = getModalElements();
 
@@ -1571,6 +1609,22 @@
           ? null
           : dueDateValue;
 
+      const rawTags = taskTags?.value ?? "";
+      let tags = [];
+
+      if (rawTags.trim() !== "") {
+        const parsedTags = rawTags
+          .split(",")
+          .map((tag) => tag.trim());
+
+        if (parsedTags.some((tag) => tag === "")) {
+          setModalError("Tags cannot contain blank values.");
+          return;
+        }
+
+        tags = parsedTags;
+      }
+
       const isEditMode =
         modalMode === "edit" &&
         Boolean(
@@ -1589,6 +1643,7 @@
         priority,
         assignee,
         due_date: dueDate,
+        tags,
       };
 
       if (isEditMode) {

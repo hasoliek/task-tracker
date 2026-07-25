@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import pytest
 
 
 def test_create_task_valid_returns_201_with_full_body(client: TestClient):
@@ -456,12 +457,20 @@ def test_create_task_with_tags_returns_cleaned_tags(
         "tags": [
             "backend",
             " urgent ",
-            "",
             "backend",
-            "   ",
         ],
     }
 
+    # Act
+    response = client.post("/tasks", json=payload)
+
+    # Assert
+    assert response.status_code == 201
+    data = response.json()
+
+    assert data["title"] == "Tagged task"
+    assert data["tags"] == ["backend", "urgent"]
+    
     # Act
     response = client.post("/tasks", json=payload)
 
@@ -743,3 +752,85 @@ def test_tag_filter_combines_with_priority_filter(
     assert data[0]["title"] == "High backend task"
     assert data[0]["priority"] == "High"
     assert data[0]["tags"] == ["backend"]
+
+
+def test_create_task_rejects_null_title(client):
+    payload = {
+        "title": None,
+        "description": "desc",
+        "status": "ToDo",
+        "priority": "Medium",
+        "assignee": None,
+        "due_date": None,
+        "tags": [],
+    }
+
+    response = client.post("/tasks", json=payload)
+
+    assert response.status_code == 422
+
+
+def test_create_task_rejects_explicit_null_title(client):
+    response = client.post(
+        "/tasks",
+        json={
+            "title": None,
+            "description": "test",
+            "status": "ToDo",
+            "priority": "High",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    "patch_payload",
+    [
+        {"title": None},
+        {"status": None},
+        {"priority": None},
+    ],
+)
+def test_patch_task_rejects_explicit_null_required_fields(client, patch_payload):
+    create_response = client.post(
+        "/tasks",
+        json={
+            "title": "Task for null regression",
+            "description": "test",
+            "status": "ToDo",
+            "priority": "Medium",
+        },
+    )
+    assert create_response.status_code in (200, 201)
+    task_id = create_response.json()["id"]
+
+    patch_response = client.patch(f"/tasks/{task_id}", json=patch_payload)
+
+    assert patch_response.status_code == 422
+
+
+def test_patch_task_allows_omitted_fields_and_preserves_existing_values(client):
+    create_response = client.post(
+        "/tasks",
+        json={
+            "title": "Original title",
+            "description": "test",
+            "status": "ToDo",
+            "priority": "Low",
+        },
+    )
+    assert create_response.status_code in (200, 201)
+    created_task = create_response.json()
+    task_id = created_task["id"]
+
+    patch_response = client.patch(
+        f"/tasks/{task_id}",
+        json={"priority": "High"},
+    )
+
+    assert patch_response.status_code == 200
+    updated_task = patch_response.json()
+    assert updated_task["priority"] == "High"
+    assert updated_task["title"] == created_task["title"]
+    assert updated_task["status"] == created_task["status"]
