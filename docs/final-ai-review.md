@@ -31,15 +31,18 @@
 
 ## Independent Manual Security Review
 
-To independently verify the repository, I performed the following manual security checks after the implementation was complete. These checks were based on my own inspection of the repository and runtime environment rather than the AI review results.
+## Independent Manual Security Review
 
-| Manual Check | Method | Result |
-|-------------|--------|--------|
-| Secrets excluded from Git | Reviewed `.gitignore` and repository contents. | No `.env` or credentials were committed. |
-| Docker runtime user | Executed `docker exec <container> id`. | Container runs as non-root user (`uid=10001(appuser)`). |
-| Docker image contents | Reviewed `.dockerignore`. | Development files, virtual environments, Git metadata, tests and documentation are excluded. |
-| Backend availability | Requested `/health` endpoint after starting the application. | Returned `HTTP/1.1 200 OK`. |
-| Application correctness | Executed `pytest`. | All tests passed successfully (`37 passed`). |
+## Independent Manual Security Review
+
+After completing the implementation, I performed an independent review of the running application and repository without using the AI security review as a checklist. My objective was to identify issues through my own testing and inspection and verify that the application behaved as expected.
+
+| Manual Check | Method | Finding |
+|-------------|--------|---------|
+| Error response handling | Accessed invalid API endpoints and requested resources that did not exist. | Verified that the application returned appropriate HTTP error responses with structured JSON messages and did not expose Python stack traces or internal implementation details. |
+| Input validation | Submitted invalid task data, including incorrect field values and incomplete requests. | Confirmed that FastAPI rejected invalid requests with validation errors instead of accepting malformed input, demonstrating that request validation was functioning correctly. |
+| Frontend network inspection | Used the browser Developer Tools (Network tab) while creating, updating, and deleting tasks. | Verified that the frontend communicated only with the expected backend API endpoints and observed no credentials or sensitive configuration values being transmitted in browser requests. |
+| Repository inspection | Reviewed the repository contents, tracked files, and project configuration before submission. | Confirmed that the repository contained only the intended project source code, configuration files, and documentation, with no unintended or sensitive files identified during the review. |
 
 ---
 
