@@ -29,9 +29,7 @@
 
 ---
 
-## Independent Manual Security Review
 
-## Independent Manual Security Review
 
 ## Independent Manual Security Review
 
